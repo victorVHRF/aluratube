@@ -23,6 +23,7 @@ export const StyledTimeline = styled.div`
     padding: 0;
     overflow: hidden;
     padding: 16px;
+    color-scheme: ${({theme})=> theme.colorScheme};
     div {
       width: calc(100vw - 16px * 4);
       display: grid;
