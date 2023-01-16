@@ -1,11 +1,27 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import config from "../config.json"
 import styled from "styled-components"
 import Menu from "../src/components/Menu"
 import { StyledTimeline } from "../src/components/TimeLine"
+import { videoService } from "../src/services/videoService"
 
 function HomePage() {
+  const service = videoService();
   const [valorDoFiltro, setValorDoFiltro] = useState("");
+  const [playlists, setPlaylists] = useState({})
+
+  useEffect(() => {
+    service.getAllVideos()
+      .then((dados) => {
+        const novasPlaylists = { ...playlists }
+        dados.data.forEach((video) => {
+          if(!novasPlaylists[video.playlist]) novasPlaylists[video.playlist] = [];
+          novasPlaylists[video.playlist].push(video);
+        })
+        setPlaylists(novasPlaylists);
+      })
+  }, [])
+
 
   return (
     <>
@@ -18,7 +34,7 @@ function HomePage() {
       >
         <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro}/>
         <Header />
-        <TimeLine searchValue={valorDoFiltro} playlists={config.playlists}> 
+        <TimeLine searchValue={valorDoFiltro} playlists={playlists}> 
           Conteúdo
         </TimeLine>
       </div>
@@ -27,10 +43,6 @@ function HomePage() {
 }
 
 export default HomePage
-
-// function Menu() {
-//   return <div>Menu</div>
-// }
 
 const StyledHeader = styled.div`
   background-color: ${({ theme }) => theme.backgroundLevel1};
@@ -76,8 +88,6 @@ function TimeLine({searchValue, ...props}) {
     <StyledTimeline>
       {playlistsNames.map((playlistName) => {
         const videos = props.playlists[playlistName]
-        // console.log(playlistName)
-        // console.log(videos)
         return (
           <section key={playlistName}>
             <h2>{playlistName}</h2>

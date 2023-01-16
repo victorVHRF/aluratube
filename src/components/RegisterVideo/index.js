@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { StyledRegisterVideo } from "./styles";
+import { environment } from "../../environments/environment"
+import { createClient } from "@supabase/supabase-js";
 
 function useForm(props) { 
   const [values, setValues] = useState(props.initialValues);
@@ -20,11 +22,19 @@ function useForm(props) {
   }
 }
 
+function getThumbnail(url){
+  return `https://img.youtube.com/vi/${url.split("v=")[1]}/hqdefault.jpg`
+}
+
+const supabase = createClient(environment.PROJECT_URL, environment.KEY)
+
 export default function RegisterVideo(){
   const formCadastro = useForm({
-    initialValues: {titulo: "", url: ""}
+    initialValues: {playlist: "", titulo: "", url: ""}
   });
   const [formVisivel, setFormVisivel] = useState(false);
+
+  console.log();
 
   return (
     <StyledRegisterVideo>
@@ -35,6 +45,19 @@ export default function RegisterVideo(){
       {formVisivel && (
               <form onSubmit={(event)=> {
                 event.preventDefault();
+                supabase.from("video").insert({
+                  playlist: formCadastro.values.playlist,
+                  title: formCadastro.values.titulo,
+                  url: formCadastro.values.url,
+                  thumb: getThumbnail(formCadastro.values.url),
+                })
+                .then((res) => {
+                  console.log(res)
+                })
+                .catch((err) => {
+                  console.log('error: ', err)
+                })
+
                 setFormVisivel(false);
                 formCadastro.clearForm();
               }}>
@@ -43,6 +66,12 @@ export default function RegisterVideo(){
                     X
                   </button>
 
+                  <input 
+                    placeholder="Playlist"
+                    name="playlist"
+                    value={formCadastro.values.playlist} 
+                    onChange={formCadastro.handleChange} 
+                  />
                   <input 
                     placeholder="Título do vídeo"
                     name="titulo"
